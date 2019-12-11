@@ -31,8 +31,8 @@ parser.add_argument('--workers', type=int, help='number of data loading workers'
 parser.add_argument('batchSize', type=int, default=64, help='input batch size')
 parser.add_argument('--imageSize', type=int, default=64, help='the height / width of the input image to network')
 parser.add_argument('--nz', type=int, default=100, help='size of the latent vector z')
-parser.add_argument('--ngf', type=int, default=64)
-parser.add_argument('--ndf', type=int, default=64)
+parser.add_argument('--ngf', type=int, default=64, help='depth of feature maps carried through the generator')
+parser.add_argument('--ndf', type=int, default=64, help='depth of feature maps carried through the discriminator')
 parser.add_argument('--niter', type=int, default=25, help='number of epochs to train for')
 parser.add_argument('--lr', type=float, default=0.0002, help='learning rate, default=0.0002')
 parser.add_argument('--beta1', type=float, default=0.5, help='beta1 for adam. default=0.5')
@@ -62,3 +62,41 @@ cudnn.benchmark = True
 
 if torch.cuda.is_available() and not opt.cuda:
     print('WARNING: You have a CUDA device, so you should probably run with --cuda')
+
+## Data
+# Create the dataset
+dataset = datasets.ImageFolder(root=dataroot,
+                               transform=transforms.Compose([
+                                   transforms.Resize(imageSize),
+                                   transforms.CenterCrop(imageSize),
+                                   transforms.ToTensor(),
+                                   transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+                               ]))
+
+# Create the dataloader
+dataloader = torch.utils.data.DataLoader(dataset, batch_size=batchSize,
+                                         shuffle=True, num_workers=workers)
+
+# Decide which device we want to run on
+device = torch.device("cuda:0" if (torch.cuda.is_available() and ngpu > 0) else "cpu")
+
+if opt.dataset in ['imagenet', 'folder', 'lfw']:
+    # folder dataset
+    dataset = datasets.ImageFolder(root=opt.dataroot,
+                                   transform=transforms.Compose([
+                                       transforms.Resize(opt.imageSize),
+                                       transforms.CenterCrop(opt.imageSize),
+                                       transforms.ToTensor(),
+                                       transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+                                   ]))
+    nc=3
+
+assert dataset
+dataloader = torch.utils.data.DataLoader(dataset, batch_size=opt.batchSize,
+                                         shuffle=True, num_workers=int(opt.workers))
+
+device = torch.device("cuda:0" if opt.cuda else "cpu")
+ngpu = int(opt.ngpu)
+nz = int(opt.nz)
+ngf = int(opt.ngf)
+ndf = int(opt.ndf)
