@@ -197,6 +197,11 @@ optimizerG = optim.Adam(netG.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999))
 
 # Training Loop
 
+img_list = []
+G_losses = []
+D_losses = []
+iters = 0
+
 print("Starting Training Loop...")
 for epoch in range(opt.niter):
     for i, data in enumerate(dataloader, 0):
@@ -262,6 +267,17 @@ for epoch in range(opt.niter):
         #    vutils.save(fake.detach(),
         #            '%s/fake_samples_epoch_%03d.png' % (opt.outf, epoch),
         #            normalize=True)
+
+        G_losses.append(errG.item())
+        D_losses.append(errD.item())
+
+        # Check how the generator is doing by saving G's output on fixed_noise
+        if (iters % 500 == 0) or ((epoch == opt.niter-1) and (i == len(dataloader)-1)):
+            with torch.no_grad():
+                fake = netG(fixed_noise).detach().cpu()
+            img_list.append(vutils.make_grid(fake, padding=2, normalize=True))
+
+        iters += 1
 
     # do checkpointing
     torch.save(netG.state_dict(), '%s/netG_epoch_%d.pth' % (opt.outf, epoch))
