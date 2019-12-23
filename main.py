@@ -23,6 +23,7 @@ import torch.utils.data
 import torchvision.datasets as datasets
 import torchvision.transforms as transforms
 import torchvision.utils as vutils
+import matplotlib.pyplot as plt
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--dataset', required=True, help='cifar10 | lsun | mnist | imagenet | folder | lwf | fake')
@@ -282,3 +283,14 @@ for epoch in range(opt.niter):
     # do checkpointing
     torch.save(netG.state_dict(), '%s/netG_epoch_%d.pth' % (opt.outf, epoch))
     torch.save(netD.state_dict(), '%s/netD_epoch_%d.pth' % (opt.outf, epoch))
+
+# Results
+
+plt.figure(figsize=(10,5))
+plt.title("Generator and Discriminator Loss During Training")
+plt.plot(G_losses, label="G")
+plt.plot(D_losses, label="D")
+plt.xlabel("Iterations")
+plt.ylabel("Loss")
+plt.legend()
+plt.savefig("generator_and_discriminator_loss.png")
