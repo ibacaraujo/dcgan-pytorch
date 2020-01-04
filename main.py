@@ -4,7 +4,7 @@
 # x is an image
 # D(x) is the discriminator network which receives an image x as input and outputs probability that x came from training data
 # z is a latent space vector sampled from a normal distribution
-# G(z) is the generator network which maps the latent vector z to data-space
+# G(z) is the generator network which maps the latent vector z to an image on the data space
 # D(G(z)) is the probability that the output of the generator G is a real image
 
 # D tries to maximize the probability it correctly classifies reals and fakes (log(D(x)))
