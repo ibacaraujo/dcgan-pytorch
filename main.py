@@ -66,7 +66,6 @@ if torch.cuda.is_available() and not opt.cuda:
 
 ## Data
 if opt.dataset in ['imagenet', 'folder', 'lfw']:
-    # folder dataset
     dataset = datasets.ImageFolder(root=opt.dataroot,
                                    transform=transforms.Compose([
                                        transforms.Resize(opt.imageSize),
@@ -257,26 +256,19 @@ for epoch in range(opt.niter):
         optimizerG.step()
 
         # Output training stats
-        print('[%d/%d][%d/%d]\tLoss_D: %.4f\tLoss_G: %.4f\tD(x): %.4f\tD(G(z)): %.4f / %.4f'
-             % (epoch, opt.niter, i, len(dataloader), errD.item(), errG.item(),
-                D_x, D_G_z1, D_G_z2))
-        #if i % 100 == 0:
-        #    vutils.save(real_cpu,
-        #            '%s/real_samples.png' % opt.outf,
-        #            normalize=True)
-        #    fake = netG(fixed_noise)
-        #    vutils.save(fake.detach(),
-        #            '%s/fake_samples_epoch_%03d.png' % (opt.outf, epoch),
-        #            normalize=True)
+        if i % 50 == 0:
+            print('[%d/%d][%d/%d]\tLoss_D: %.4f\tLoss_G: %.4f\tD(x): %.4f\tD(G(z)): %.4f / %.4f'
+                 % (epoch, opt.niter, i, len(dataloader), errD.item(), errG.item(),
+                    D_x, D_G_z1, D_G_z2))
 
         G_losses.append(errG.item())
         D_losses.append(errD.item())
 
         # Check how the generator is doing by saving G's output on fixed_noise
-        if (iters % 500 == 0) or ((epoch == opt.niter-1) and (i == len(dataloader)-1)):
-            with torch.no_grad():
-                fake = netG(fixed_noise).detach().cpu()
-            img_list.append(vutils.make_grid(fake, padding=2, normalize=True))
+        #if (iters % 500 == 0) or ((epoch == opt.niter-1) and (i == len(dataloader)-1)):
+        #    with torch.no_grad():
+        #        fake = netG(fixed_noise).detach().cpu()
+        #    img_list.append(vutils.make_grid(fake, padding=2, normalize=True))
 
         iters += 1
 
