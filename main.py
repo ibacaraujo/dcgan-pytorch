@@ -197,13 +197,16 @@ optimizerG = optim.Adam(netG.parameters(), lr=opt.lr, betas=(opt.beta1, 0.999))
 
 # Training Loop
 
+# Lists to keep track of progress
 img_list = []
 G_losses = []
 D_losses = []
 iters = 0
 
 print("Starting Training Loop...")
+# For each epoch
 for epoch in range(opt.niter):
+    # For each batch in the dataloader
     for i, data in enumerate(dataloader, 0):
         ############################
         # (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
@@ -216,7 +219,7 @@ for epoch in range(opt.niter):
         batch_size = real_cpu.size(0)
         label = torch.full((batch_size,), real_label, device=device)
         # Forward pass real batch through D
-        output = netD(real_cpu)
+        output = netD(real_cpu).view(-1)
         # Calculate loss on all-real batch
         errD_real = criterion(output, label)
         # Calculate gradients for D in backward pass
@@ -230,7 +233,7 @@ for epoch in range(opt.niter):
         fake = netG(noise)
         label.fill_(fake_label)
         # Classify all fake batch with D
-        output = netD(fake.detach())
+        output = netD(fake.detach()).view(-1)
         # Calculate D's loss on the all-fake batch
         errD_fake = criterion(output, label)
         D_G_z1 = output.mean().item()
@@ -246,7 +249,7 @@ for epoch in range(opt.niter):
         netG.zero_grad()
         label.fill_(real_label) # fake labels are real for generator cost
         # Since we just updated D, perform another forward pass of all-fake batch through D
-        output = netD(fake)
+        output = netD(fake).view(-1)
         # Calculate G's loss based on this output
         errG = criterion(output, label)
         # Calculate gradients for G
