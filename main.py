@@ -126,16 +126,15 @@ class Generator(nn.Module):
         )
 
     def forward(self, input):
-        if input.is_cuda and self.ngpu > 1:
-            output = nn.parallel.data_parallel(self.main, input, range(self.ngpu))
-        else:
-            output = self.main(input)
-        return output
+        return self.main(input)
 
 netG = Generator(ngpu).to(device)
+
+if (device.type == 'cuda') and (opt.ngpu > 1):
+    netG = nn.DataParallel(netG, list(range(opt.ngpu)))
+
 netG.apply(weights_init)
-if opt.netG != '':
-    netG.load_state_dict(torch.load(opt.netG))
+
 print(netG)
 
 # Discriminator
@@ -169,17 +168,15 @@ class Discriminator(nn.Module):
         )
 
     def forward(self, input):
-        if input.is_cuda and self.ngpu > 1:
-            output = nn.parallel.data_parallel(self.main, input, range(self.ngpu))
-        else:
-            output = self.main(input)
-
-        return output.view(-1, 1).squeeze(1)
+        return self.main(input)
 
 netD = Discriminator(ngpu).to(device)
+
+if (device.type == 'cuda') and (opt.ngpu > 1):
+    netD = nn.DataParallel(netD, list(range(opt.ngpu)))
+
 netD.apply(weights_init)
-if opt.netD != '':
-    netD.load_state_dict(torch.load(opt.netD))
+
 print(netD)
 
 # Loss Functions and Optimizers
